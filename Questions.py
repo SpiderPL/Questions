@@ -47,6 +47,18 @@ def fill_temp_data_after_answers(temp_max, i, temp_data, data_base, temp_data_ba
     return temp_data_base
 
 
+def remove_empty_questions(temp_data_base):
+    possible_chars_in_answers = ['A', 'B', 'C', 'D', 'E', 'F']
+    for i in range(len(temp_data_base) - 1, 0, -1):
+        if not temp_data_base[i][len(temp_data_base[i]) - 1]:
+            del temp_data_base[i]
+            continue
+        if temp_data_base[i][len(temp_data_base[i]) - 1][0] not in possible_chars_in_answers:
+            del temp_data_base[i]
+            continue
+    return temp_data_base
+
+
 def delete_strings_after_correct_answers(data_base, lines):
     """Delete useless data between tasks"""
     max_range_for_base = count_lines_in_simple_question(lines)
@@ -62,27 +74,8 @@ def delete_strings_after_correct_answers(data_base, lines):
         temp_data_base = fill_temp_data_after_answers(
             temp_max, i, temp_data, data_base, temp_data_base
         )
+    return remove_empty_questions(temp_data_base)
 
-    abcde=['A', 'B', 'C', 'D', 'E', 'F']
-    for i in range(len(temp_data_base)-1,0,-1):
-        if not temp_data_base[i][len(temp_data_base[i]) - 1]:
-            del temp_data_base[i]
-            continue
-        if 'o' is temp_data_base[i][len(temp_data_base[i]) - 1] or 'r' is temp_data_base[i][len(temp_data_base[i]) - 1] :
-            del temp_data_base[i]
-            continue
-        if  temp_data_base[i][len(temp_data_base[i]) - 1][0] not in abcde:
-            del temp_data_base[i]
-            continue
-    return temp_data_base
-
-'''
-def remove_questions_124_and_144(data_base):
-    """Remove questions"""
-    #del data_base[143]
-    #del data_base[123]
-    return data_base
-'''
 
 def create_temporary_memory(data_base):
     """It creates a database for questions after filtering"""
@@ -138,7 +131,6 @@ def shuflle_questions(number_of_questions, temporary_memory):
 
 def check_maximum_number_of_question(temporary_memory, number_of_questions):
     """Check limit of questions"""
-    print(len(temporary_memory))
     if len(temporary_memory) < number_of_questions:
         return len(temporary_memory)
     return number_of_questions
@@ -331,7 +323,6 @@ def main():
     lines = delete_empy_lines_in_document(lines)
     data_base = split_the_base_into_a_single_one(lines)
     data_base = delete_strings_after_correct_answers(data_base, lines)
-    #data_base = remove_questions_124_and_144(data_base)
     temporary_memory = split_simple_question(data_base)
     number_of_questions = check_maximum_number_of_question(
         temporary_memory, number_of_questions
