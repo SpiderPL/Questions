@@ -17,12 +17,12 @@ def fill_temp_with_everything_after_answer(temp, data_base, i, k):
     return temp
 
 
-def fill_c_with_only_correct_answer(temp):
+def fill_list_cell_with_only_correct_answer(temp):
     """Check number of correct answers"""
     last_cell = "".join(temp)
     last_cell = last_cell[last_cell.index(":") + 1 :]
     cell = [i for i, j in enumerate(last_cell) if j == "," and i < 12]
-    if len(cell) == 0:
+    if not cell:
         last_cell = last_cell[:1]
     if len(cell) == 1:
         last_cell = last_cell[:3:2]
@@ -34,8 +34,8 @@ def fill_c_with_only_correct_answer(temp):
         last_cell = last_cell[:9:2]
     if len(cell) == 5:
         last_cell = last_cell[:11:2]
-    if 'o' in last_cell or 'r' in last_cell:
-        last_cell=''
+    if "o" in last_cell or "r" in last_cell:
+        last_cell = ""
     return last_cell
 
 
@@ -48,12 +48,16 @@ def fill_temp_data_after_answers(temp_max, i, temp_data, data_base, temp_data_ba
 
 
 def remove_empty_questions(temp_data_base):
-    possible_chars_in_answers = ['A', 'B', 'C', 'D', 'E', 'F']
+    """Removes questions without content"""
+    possible_chars_in_answers = ["A", "B", "C", "D", "E", "F"]
     for i in range(len(temp_data_base) - 1, 0, -1):
         if not temp_data_base[i][len(temp_data_base[i]) - 1]:
             del temp_data_base[i]
             continue
-        if temp_data_base[i][len(temp_data_base[i]) - 1][0] not in possible_chars_in_answers:
+        if (
+            temp_data_base[i][len(temp_data_base[i]) - 1][0]
+            not in possible_chars_in_answers
+        ):
             del temp_data_base[i]
             continue
     return temp_data_base
@@ -63,12 +67,12 @@ def delete_strings_after_correct_answers(data_base, lines):
     """Delete useless data between tasks"""
     max_range_for_base = count_lines_in_simple_question(lines)
     temp_data_base = [[] for _ in range(max_range_for_base)]
-    for i in range(len(data_base)):
+    for i, _ in enumerate(data_base):
         for j in range(len(data_base[i])):
             temp = []
-            if "Answ" in data_base[i][j]:  # find answ
+            if "Answ" in data_base[i][j]:
                 temp = fill_temp_with_everything_after_answer(temp, data_base, i, j)
-                temp_data = fill_c_with_only_correct_answer(temp)
+                temp_data = fill_list_cell_with_only_correct_answer(temp)
                 temp_max = j
 
         temp_data_base = fill_temp_data_after_answers(
@@ -83,10 +87,10 @@ def create_temporary_memory(data_base):
     return temporary_memory
 
 
-def split_simple_question(data_base):
+def split_data_to_simple_question(data_base):
     """Divide the questions into the question, answers and correct answers"""
     temporary_memory = create_temporary_memory(data_base)
-    for i,_ in enumerate(data_base):
+    for i, _ in enumerate(data_base):
         flag = 0
         for j in range(len(data_base[i]) - 1):
             if data_base[i][j].startswith("A."):
@@ -113,7 +117,7 @@ def shuffle_numbers(number_of_questions, temporary_memory):
     questions_memory = [
         [[random_list[i]] for _ in range(9)] for i in range(number_of_questions)
     ]
-    for i in range(len(questions_memory)):
+    for i, _ in enumerate(questions_memory):
         questions_memory[i][8] = False
     return questions_memory
 
@@ -147,7 +151,7 @@ def count_lines_in_simple_question(lines):
 def remove_beginning_strings_in_question(temp_data_base):
     """Removing the content before the first task"""
     remove_number = 0
-    for i in range(len(temp_data_base)):
+    for i, _ in enumerate(temp_data_base):
         number_question = 1 + i
         for j in range(4):
             if str(number_question) in temp_data_base[i][j]:
@@ -161,7 +165,7 @@ def remove_beginning_strings_in_question(temp_data_base):
     return temp_data_base
 
 
-def split_the_base_into_a_single_one(lines):
+def split_the_base_into_list_of_questions(lines):
     """Divide the file into parts containing a single question"""
     max_range_for_base = count_lines_in_simple_question(lines)
     flag = -1
@@ -182,12 +186,9 @@ def import_data_from_file(file_name):
     pdf_file = open(file_name, "rb")
     read_pdf = PyPDF2.PdfFileReader(pdf_file)
     lines = []
-    # for page_now in range(45, 65):
     for page_now in range(read_pdf.getNumPages()):
         page_content = read_pdf.getPage(page_now).extractText()
         lines.extend(page_content.splitlines())
-    # lines.extend(a for page_now in range(read_pdf.getNumPages())
-    # for a in read_pdf.getPage(page_now).extractText().splitlines())
     return lines
 
 
@@ -209,15 +210,13 @@ def remove_page_number(lines):
 def remove_section_page_footer(lines):
     """Find page footer at the beginning"""
     temp_lines = []
-    for line in lines:  # lines before Question 1 contains something
+    for line in lines:
         temp_line = line.replace(" ", "")
         if temp_line.startswith("Question"):
             break
         else:
             if temp_line != "":
                 temp_lines.append(line)
-    # temp_lines= list(end_of_loop() if line.replace(' ', '')
-    # #.startswith('Question') else line for line in lines)
     return delete_page_footer(lines, temp_lines)
 
 
@@ -271,47 +270,70 @@ def cls():
 
 def answer_question(correct_answer):
     """Check if this answer is correct"""
-    c="".join(sorted(input("write an answer: "))).strip()
-    if correct_answer == c:
-        print("Correct")
+    if correct_answer == "".join(
+        sorted(filter(lambda x: x.isdigit(), input("write an answer: ")))
+    ):
+        print("\nCorrect \n")
         return True
-    print("Nope Try Again")
+    print("\nTry Again \n")
     return False
+
+
+def check_number_answers_in_question(questions_memory, i):
+    """Count the number of possible answers possible"""
+    numbers_question = 6
+    if len(questions_memory[i][7]) < 4:
+        numbers_question = 5
+    if len(questions_memory[i][6]) < 4:
+        numbers_question = 4
+    return numbers_question
+
+
+def convert_correct_answers(questions_memory, random_list, values, i):
+    """Convert a letters to numbers in the previously determined order"""
+    temp_data = []
+    for j in range(len(questions_memory[i][1][0])):
+        for key, value in random_list.items():
+            if questions_memory[i][1][0][j] == key:
+                temp_data.append(value)
+                break
+    for j, _ in enumerate(temp_data):
+        for k, _ in enumerate(values):
+            if temp_data[j] == values[k] + 1:
+                temp_data[j] = k + 1
+                break
+    temp_data2 = "".join(sorted(map(str, temp_data)))
+    return temp_data2
+
+
+def print_possible_answers(questions_memory, values, i, numbers_question):
+    """Print possible answers"""
+    number_question = 1
+    for j in range(numbers_question):
+        print(number_question, ". ", "".join(questions_memory[i][values[j] + 2][1:]))
+        number_question += 1
+
+
+def create_random_list(numbers_question):
+    """Create a random list of possible answers"""
+    values = list(range(numbers_question))
+    random.shuffle(values)
+    return values
 
 
 def ask_question(questions_memory, number_of_questions):
     """Function showing content"""
 
-    x = dict(A=1, B=2, C=3, D=4,E=5,F=6)
+    random_list = dict(A=1, B=2, C=3, D=4, E=5, F=6)
     for i in range(number_of_questions):
-        numbers_question=6
-        number_question=1
-        if len(questions_memory[i][7]) < 4:
-            numbers_question = 5
-        if len(questions_memory[i][6]) < 4:
-            numbers_question = 4
+        numbers_question = check_number_answers_in_question(questions_memory, i)
         values = list(range(numbers_question))
         random.shuffle(values)
-        print("".join(questions_memory[i][0][1:]))
-        for j in range(numbers_question):
-            print(number_question,'. ', "".join(questions_memory[i][values[j]+2][1:]))
-            number_question +=1
-        temp_data=[]
-        for j in range(len(questions_memory[i][1][0])):
-            for key, value in x.items():
-                if questions_memory[i][1][0][j] == key:
-                    temp_data.append(value)
-                    break
-        for j in range(len(temp_data)):
-            for k in range(len(values)):
-                if temp_data[j]==values[k]+1:
-                    temp_data[j]=k+1
-                    break
-        temp_data2 = ''.join(sorted(map(str, temp_data)))
-        print(
-            "Do not tell anyone the correct answers are ",temp_data2
-        )
-
+        values = create_random_list(numbers_question)
+        print(i + 1, ": ", "".join(questions_memory[i][0][1:]))
+        print_possible_answers(questions_memory, values, i, numbers_question)
+        temp_data2 = convert_correct_answers(questions_memory, random_list, values, i)
+        print("Do not tell anyone the correct answers are ", temp_data2)
         questions_memory[i][8] = answer_question(temp_data2)
     return questions_memory
 
@@ -319,13 +341,13 @@ def ask_question(questions_memory, number_of_questions):
 def results(questions_memory, start, stop, number_of_questions):
     """Show statistic after cycle of learning"""
     correct_answers = 0
-    for i in range(len(questions_memory)):
-        if questions_memory[i][8] == True:
+    for i, _ in enumerate(questions_memory):
+        if questions_memory[i][8]:
             correct_answers += 1
     print(correct_answers, "questions right out of", number_of_questions)
     print("The test was solved in %.1f seconds" % (stop - start))
     effectiveness = "%.1f" % ((correct_answers / number_of_questions) * 100)
-    speed_rate = "%.1f" % ((stop - start) / (number_of_questions))
+    speed_rate = "%.1f" % ((stop - start) / number_of_questions)
     print(
         "It gives {} % and average time for answer was {} seconds".format(
             effectiveness, speed_rate
@@ -342,9 +364,9 @@ def main():
     lines = remove_section_page_footer(lines)
     lines = delete_empty_lines_at_beginning_of_the_document(lines)
     lines = delete_empy_lines_in_document(lines)
-    data_base = split_the_base_into_a_single_one(lines)
+    data_base = split_the_base_into_list_of_questions(lines)
     data_base = delete_strings_after_correct_answers(data_base, lines)
-    temporary_memory = split_simple_question(data_base)
+    temporary_memory = split_data_to_simple_question(data_base)
     number_of_questions = check_maximum_number_of_question(
         temporary_memory, number_of_questions
     )
