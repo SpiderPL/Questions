@@ -1,11 +1,8 @@
-#!/usr/bin/env python3
 
-"""A program for learning content from a script"""
-
-import time
 import os
 import random
-import PyPDF2
+
+from parser.parser import answer_question
 
 
 def fill_temp_with_everything_after_answer(temp, data_base, i, k):
@@ -181,16 +178,6 @@ def split_the_base_into_list_of_questions(lines):
     return temp_data_base
 
 
-def import_data_from_file(file_name):
-    """Read file"""
-    pdf_file = open(file_name, "rb")
-    read_pdf = PyPDF2.PdfFileReader(pdf_file)
-    lines = []
-    for page_now in range(read_pdf.getNumPages()):
-        page_content = read_pdf.getPage(page_now).extractText()
-        lines.extend(page_content.splitlines())
-    return lines
-
 
 def remove_page_number(lines):
     """Finds and deletes consecutive page numbers"""
@@ -253,30 +240,11 @@ def delete_empy_lines_in_document(lines):
     return lines_now
 
 
-def read_info():
-    """Reading the file name and how many questions should it ask"""
-    # file_name = str(input('Write file name: ').strip())
-    # number_of_questions = int(input('How many question you want?: ').strip())
-    # Temporary:
-    number_of_questions = 6
-    file_name = "123.pdf"
-    return number_of_questions, file_name
-
 
 def cls():
     """Function console clearing"""
     os.system("cls" if os.name == "nt" else "clear")
 
-
-def answer_question(correct_answer):
-    """Check if this answer is correct"""
-    if correct_answer == "".join(
-        sorted(filter(lambda x: x.isdigit(), input("write an answer: ")))
-    ):
-        print("\nCorrect \n")
-        return True
-    print("\nTry Again \n")
-    return False
 
 
 def check_number_answers_in_question(questions_memory, i):
@@ -338,46 +306,5 @@ def ask_question(questions_memory, number_of_questions):
     return questions_memory
 
 
-def results(questions_memory, start, stop, number_of_questions):
-    """Show statistic after cycle of learning"""
-    correct_answers = 0
-    for i, _ in enumerate(questions_memory):
-        if questions_memory[i][8]:
-            correct_answers += 1
-    print(correct_answers, "questions right out of", number_of_questions)
-    print("The test was solved in %.1f seconds" % (stop - start))
-    effectiveness = "%.1f" % ((correct_answers / number_of_questions) * 100)
-    speed_rate = "%.1f" % ((stop - start) / number_of_questions)
-    print(
-        "It gives {} % and average time for answer was {} seconds".format(
-            effectiveness, speed_rate
-        )
-    )
 
 
-def main():
-    """A function that calls all intermediate functions"""
-    start = time.time()
-    number_of_questions, file_name = read_info()
-    lines = import_data_from_file(file_name)
-    lines = remove_page_number(lines)
-    lines = remove_section_page_footer(lines)
-    lines = delete_empty_lines_at_beginning_of_the_document(lines)
-    lines = delete_empy_lines_in_document(lines)
-    data_base = split_the_base_into_list_of_questions(lines)
-    data_base = delete_strings_after_correct_answers(data_base, lines)
-    temporary_memory = split_data_to_simple_question(data_base)
-    number_of_questions = check_maximum_number_of_question(
-        temporary_memory, number_of_questions
-    )
-    question_memory = shuflle_questions(number_of_questions, temporary_memory)
-    stop = time.time()
-    print("The program worked for %.2f seconds" % (stop - start))
-    start = time.time()
-    questions_memory = ask_question(question_memory, number_of_questions)
-    stop = time.time()
-    results(questions_memory, start, stop, number_of_questions)
-
-
-if __name__ == "__main__":
-    main()
