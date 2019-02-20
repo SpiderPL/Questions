@@ -3,6 +3,10 @@
 """A program for learning content from a script"""
 
 import time
+import cProfile
+import pstats
+import io
+
 
 from parser.pdf_reader import import_data_from_file
 from parser.parser import read_info
@@ -23,6 +27,8 @@ from parser.common import (
 
 def main():
     """A function that calls all intermediate functions"""
+    pr = cProfile.Profile()
+    pr.enable()
     start = time.time()
     number_of_questions, file_name = read_info()
     lines = import_data_from_file(file_name)
@@ -43,7 +49,12 @@ def main():
     questions_memory = ask_question(question_memory, number_of_questions)
     stop = time.time()
     results(questions_memory, start, stop, number_of_questions)
-
+    pr.disable()
+    s = io.StringIO()
+    sortby = 'cumulative'
+    ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+    ps.print_stats()
+    print(s.getvalue())
 
 if __name__ == "__main__":
     main()
