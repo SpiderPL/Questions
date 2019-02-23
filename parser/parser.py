@@ -1,10 +1,9 @@
 def read_info():
     """Reading the file name and how many questions should it ask"""
-    # file_name = str(input('Write file name: ').strip())
-    # number_of_questions = int(input('How many question you want?: ').strip())
-    # Temporary:
-    number_of_questions = 6
-    file_name = "123.pdf"
+    # TODO use 123.pdf file name
+    file_name = str(input('Write file name: ').strip())
+    number_of_questions = int("".join(
+        sorted(filter(lambda x: x.isdigit(), input("How many question you want?: ")))))
     return number_of_questions, file_name
 
 def answer_question(correct_answer):

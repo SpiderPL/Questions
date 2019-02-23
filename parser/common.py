@@ -301,7 +301,8 @@ def ask_question(questions_memory, number_of_questions):
         print(i + 1, ": ", "".join(questions_memory[i][0][1:]))
         print_possible_answers(questions_memory, values, i, numbers_question)
         temp_data2 = convert_correct_answers(questions_memory, random_list, values, i)
-        print("Do not tell anyone the correct answers are ", temp_data2)
+        # TODO correct answers:
+        #print("Do not tell anyone the correct answers are ", temp_data2)
         questions_memory[i][8] = answer_question(temp_data2)
     return questions_memory
 
